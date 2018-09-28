@@ -1,0 +1,16 @@
+[
+      {
+        "name": "tw_teste_app",
+        "image": "amandamattos/tw_teste_app:snapshot",
+        "cpu": 0,
+        "memoryReservation": 512,
+        "portMappings": [
+          {
+            "containerPort": 3000,
+            "hostPort": 80,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true
+      }
+    ]
