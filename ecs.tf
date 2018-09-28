@@ -1,3 +1,4 @@
+/*
 # ECS Cluster definition
 resource "aws_ecs_cluster" "tw-cluster" {
   name = "${var.ecs_cluster}"
@@ -47,7 +48,9 @@ resource "aws_ecs_task_definition" "tw-teste-app-task" {
   execution_role_arn = "${aws_iam_role.ecs_execution_role.arn}"
   task_role_arn      = "${aws_iam_role.ecs_execution_role.arn}"
 }
+*/
 
+/*
 # ECS Service Policy
 data "aws_iam_policy_document" "ecs_service_policy" {
   statement {
@@ -88,26 +91,67 @@ resource "aws_iam_role_policy" "ecs_service_role_policy" {
 }
 
 # ECS Service definition
-resource "aws_ecs_service" "tw-teste-app-service" {
-  name            = "tw-teste-app-ecs-service"
-  task_definition = "${aws_ecs_task_definition.tw-teste-app-task.arn}"
-  cluster         = "${aws_ecs_cluster.tw-cluster.id}"
-  launch_type     = "FARGATE"
+resource "aws_ecs_service" "teste-tw-service" {
+  name            = "teste-tw-service"
+  task_definition = "tw_teste_task_snapshot" #"${aws_ecs_task_definition.tw-teste-app-task.arn}"
+  cluster         = "teste-cluster" #"${aws_ecs_cluster.tw-cluster.id}"
+  launch_type     = "EC2"
   desired_count   = "2"
 
   depends_on = ["aws_iam_role_policy.ecs_service_role_policy"]
 
   network_configuration {
     security_groups  = ["${aws_security_group.tw_ecs_service_sg.id}"]
-    subnets          = ["${aws_subnet.twPublicSubnet1.id}", "${aws_subnet.twPublicSubnet2.id}"]
+    subnets          = ["subnet-07ef91e6e6b8d0d41","subnet-0a8fdbfa4ff3b6cc7"] #["${aws_subnet.twPublicSubnet1.id}", "${aws_subnet.twPublicSubnet2.id}"]
     assign_public_ip = true
   }
 
   load_balancer {
-    target_group_arn = "${aws_alb_target_group.tw_teste_app_TG.arn}"
+    target_group_arn = "${aws_alb_target_group.twTesteAppTG1.arn}"
     container_name   = "${var.container_name}"
     container_port   = "${var.container_port}"
   }
 
-  depends_on = ["aws_alb_target_group.api_target_group"]
+  depends_on = ["aws_alb_target_group.twTesteAppTG1"]
+}
+
+*/
+
+
+
+resource "aws_iam_role" "ecs-service-role" {
+    name                = "ecs-service-role"
+    path                = "/"
+    assume_role_policy  = "${data.aws_iam_policy_document.ecs-service-policy.json}"
+}
+
+
+resource "aws_iam_role_policy_attachment" "ecs-service-role-attachment" {
+    role       = "${aws_iam_role.ecs-service-role.name}"
+    policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
+}
+
+data "aws_iam_policy_document" "ecs-service-policy" {
+    statement {
+        actions = ["sts:AssumeRole"]
+
+        principals {
+            type        = "Service"
+            identifiers = ["ecs.amazonaws.com"]
+        }
+    }
+}
+
+resource "aws_ecs_service" "test-ecs-service" {
+  	name            = "test-ecs-service"
+  	iam_role        = "${aws_iam_role.ecs-service-role.name}"
+  	cluster         = "teste-cluster" #"${aws_ecs_cluster.tw-cluster.id}"
+  	task_definition = "tw_teste_task_snapshot" #"${aws_ecs_task_definition.tw-teste-app-task.arn}"
+  	desired_count   = 2
+
+  	load_balancer {
+      target_group_arn = "${aws_alb_target_group.twTesteAppTG1.arn}"
+      container_name   = "${var.container_name}"
+      container_port   = "${var.container_port}"
+	  }
 }

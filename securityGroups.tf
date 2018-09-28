@@ -1,20 +1,14 @@
+/*
 # ALB Security Group
-resource "aws_security_group" "tw_alb_sg" {
-  name        = "tw-teste-alb-sg"
+resource "aws_security_group" "tw_alb_sg1" {
+  name        = "tw-teste-alb-sg1"
   description = "ALB Security Group"
-  vpc_id      = "${aws_vpc.twVPC.id}"
+  vpc_id      = "${aws_vpc.twVPC1.id}"
 
   ingress {
-    from_port   = "3000"
-    to_port     = "3000"
+    from_port   = "80"
+    to_port     = "80"
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 8
-    to_port     = 0
-    protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -26,23 +20,24 @@ resource "aws_security_group" "tw_alb_sg" {
   }
 
   tags {
-    Name = "tw-teste-alb-sg"
+    Name = "tw-teste-alb-sg1"
   }
 }
+*/
 
 # ECS Service Security Group
 resource "aws_security_group" "tw_ecs_service_sg" {
-  vpc_id      = "${aws_vpc.twVPC.id}"
+  vpc_id      = "vpc-05ce30447a6b0b03b"  #"${aws_vpc.twVPC.id}"
   name        = "tw-teste-ecs-service-sg"
   description = "Allow egress from container"
 
   ingress {
-    protocol        = "tcp"
-    from_port       = "3000"
-    to_port         = "3000"
-    security_groups = ["${aws_security_group.tw_alb_sg.id}"]
+    from_port   = "80"
+    to_port     = "80"
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
