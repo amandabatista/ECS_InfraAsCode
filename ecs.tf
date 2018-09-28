@@ -1,8 +1,5 @@
 /*
-# ECS Cluster definition
-resource "aws_ecs_cluster" "tw-cluster" {
-  name = "${var.ecs_cluster}"
-}
+
 
 resource "aws_cloudwatch_log_group" "tw-web-app" {
   name = "${var.ecs_cluster}-logs"
@@ -26,19 +23,12 @@ resource "aws_iam_role" "ecs_execution_role" {
 }
 */
 
+# ECS Cluster definition
+resource "aws_ecs_cluster" "tw-cluster" {
+  name = "tw-cluster"
+}
+
 # ECS Task definition
-/* data "template_file" "tw_teste_app_task" {
-  template = "${file("tw-teste-task-snapshot.json")}"
-
-  vars {
-    image               = "amandamattos/tw_teste_app:snapshot"
-    container_name      = "tw_teste_app"
-    container_port      = "3000"
-    desired_task_cpu    = "1024"
-    desired_task_memory = "2048"
-  }
-} */
-
 resource "aws_ecs_task_definition" "tw-teste-app-task" {
   family                   = "tw_teste_app1"
   requires_compatibilities = ["EC2"]
@@ -76,8 +66,8 @@ data "aws_iam_policy_document" "ecs-service-policy" {
 resource "aws_ecs_service" "test-ecs-service" {
   	name            = "test-ecs-service"
   	iam_role        = "${aws_iam_role.ecs-service-role.name}"
-  	cluster         = "teste-cluster" #"${aws_ecs_cluster.tw-cluster.id}"
-  	task_definition = "tw_teste_task_snapshot" #"${aws_ecs_task_definition.tw-teste-app-task.arn}"
+  	cluster         = "${aws_ecs_cluster.tw-cluster.id}"
+  	task_definition = "${aws_ecs_task_definition.tw-teste-app-task.arn}"
   	desired_count   = 2
 
   	load_balancer {
